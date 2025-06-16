@@ -15,7 +15,13 @@ const newUser = ref({ email: '', user_type: 'Local', username: '', password: '',
 
 const openEditModal = (user) => {
   selectedUser.value = { ...user };
-  selectedUserRoles.value = user.roles.split(',');
+  //selectedUserRoles.value = user.roles.split(',');
+  if(user.roles.length > 0){
+    selectedUserRoles.value = user.roles.split(',');
+  }else{
+    selectedUserRoles.value = [];
+  }
+
   showEditModal.value = true;
 };
 
@@ -69,7 +75,13 @@ const saveUserRoles = async () => {
   try {
     const roleMap = Object.fromEntries(roles.value.map(role => [role.name, role.role_id]));
 
-    const originalRoles = selectedUser.value.roles.split(',');
+    //const originalRoles = selectedUser.value.roles.split(',');
+    let originalRoles;
+    if(selectedUser.value.roles.length){
+      originalRoles = selectedUser.value.roles.split(',');
+    }else{
+      originalRoles = [];
+    }
 
     const rolesToAdd = selectedUserRoles.value.filter(role => !selectedUser.value.roles.includes(role));
     const rolesToRemove = originalRoles.filter(role => !selectedUserRoles.value.includes(role));
