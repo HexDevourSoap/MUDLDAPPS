@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import api from "../services/api";
+import { useAuthStore } from "./../store/auth";
 
 const computers = ref([]);
 const showModal = ref(false);
 const showEditModal = ref(false);
+const authStore = useAuthStore();
 
 const newComputer = ref({
   name: "",
@@ -252,14 +254,14 @@ onMounted(fetchComputers);
   <div class="computers-container">
     <h1>Datoru pārskats</h1>
 
-    <button @click="showModal = true" class="add-button">Pievienot datoru</button>
-    <button @click="() => { showComponentModal = true; fetchComponents(); }" class="add-button">
+    <button v-if="authStore.currentRole=='administrators'" @click="showModal = true" class="add-button">Pievienot datoru</button>
+    <button v-if="authStore.currentRole=='administrators'" @click="() => { showComponentModal = true; fetchComponents(); }" class="add-button">
       Komponentes
     </button>
-    <button @click="() => { showOSModal = true; fetchOS(); }" class="add-button">
+    <button v-if="authStore.currentRole=='administrators'" @click="() => { showOSModal = true; fetchOS(); }" class="add-button">
       Operētājsistēmas
     </button>
-    <button @click="() => { showSoftwareModal = true; fetchSoftware(); }" class="add-button">
+    <button v-if="authStore.currentRole=='administrators'" @click="() => { showSoftwareModal = true; fetchSoftware(); }" class="add-button">
       Programmatūra
     </button>
     <div class="computer-cards">
@@ -272,8 +274,8 @@ onMounted(fetchComputers);
             {{ os.software.length > 0 ? os.software.join(', ') : "Nav instalēta" }}
           </p>
         </div>
-        <button @click="editComputer(computer)" class="edit-btn">Rediģēt</button>
-        <button @click="confirmDelete(computer.computer_id)" class="delete-btn">Dzēst</button>
+        <button v-if="authStore.currentRole=='administrators'" @click="editComputer(computer)" class="edit-btn">Rediģēt</button>
+        <button v-if="authStore.currentRole=='administrators'" @click="confirmDelete(computer.computer_id)" class="delete-btn">Dzēst</button>
       </div>
     </div>
 
