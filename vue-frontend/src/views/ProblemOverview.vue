@@ -132,7 +132,7 @@ onMounted(fetchIssues);
                     <th>Nosaukums</th>
                     <th>Izveidots</th>
                     <th>Statuss</th>
-                    <th>Darbība</th>
+                    <th v-if="authStore.currentRole=='laborants'">Darbība</th>
                 </tr>
             </thead>
             <tbody>
@@ -141,7 +141,7 @@ onMounted(fetchIssues);
                     <td>{{ issue.title }}</td>
                     <td>{{ new Date(issue.created_at).toLocaleString() }}</td>
                     <td>{{ issue.status }}</td>
-                    <td><button @click="openModal(issue)">Rediģēt</button></td>
+                    <td v-if="authStore.currentRole=='laborants'"><button @click="openModal(issue)">Rediģēt</button></td>
                 </tr>
             </tbody>
         </table>

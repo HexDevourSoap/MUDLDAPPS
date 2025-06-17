@@ -2,6 +2,9 @@
 import { ref, onMounted, computed } from "vue";
 import MultiComputerCalendar from "../components/MultiComputerCalendar.vue";
 import api from "../services/api";
+import { useAuthStore } from "../store/auth";
+
+const authStore = useAuthStore();
 
 const requests = ref([]);
 const statuses = ["all", "pending", "approved", "denied"];
@@ -271,7 +274,7 @@ onMounted(() => {
 <template>
     <div class="request-container">
         <h1>Rezervāciju veidošana</h1>
-        <button @click="openReportModal">Ģenerēt noslogotības pārskatu</button>
+        <button v-if="authStore.currentRole=='pārvaldnieks'" @click="openReportModal">Ģenerēt noslogotības pārskatu</button>
 
         <div class="filter-container">
             <label for="statusFilter">Filtrēt pēc statusa:</label>
@@ -288,7 +291,7 @@ onMounted(() => {
                     <th>Informācija</th>
                     <th>Izveidots</th>
                     <th>Statuss</th>
-                    <th>Darbība</th>
+                    <th v-if="authStore.currentRole=='laborants'">Darbība</th>
                 </tr>
             </thead>
             <tbody>
@@ -299,8 +302,8 @@ onMounted(() => {
                     <td>
                         {{ request.status }}
                     </td>
-                    <td>
-                        <button @click="openModal(request)">Rediģēt</button>
+                    <td v-if="authStore.currentRole=='laborants'">
+                        <button  @click="openModal(request)">Rediģēt</button>
                     </td>
                 </tr>
             </tbody>

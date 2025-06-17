@@ -254,14 +254,14 @@ onMounted(fetchComputers);
   <div class="computers-container">
     <h1>Datoru pārskats</h1>
 
-    <button v-if="authStore.currentRole=='administrators'" @click="showModal = true" class="add-button">Pievienot datoru</button>
-    <button v-if="authStore.currentRole=='administrators'" @click="() => { showComponentModal = true; fetchComponents(); }" class="add-button">
+    <button v-if="authStore.currentRole=='laborants'" @click="showModal = true" class="add-button">Pievienot datoru</button>
+    <button v-if="authStore.currentRole=='laborants'" @click="() => { showComponentModal = true; fetchComponents(); }" class="add-button">
       Komponentes
     </button>
-    <button v-if="authStore.currentRole=='administrators'" @click="() => { showOSModal = true; fetchOS(); }" class="add-button">
+    <button v-if="authStore.currentRole=='laborants'" @click="() => { showOSModal = true; fetchOS(); }" class="add-button">
       Operētājsistēmas
     </button>
-    <button v-if="authStore.currentRole=='administrators'" @click="() => { showSoftwareModal = true; fetchSoftware(); }" class="add-button">
+    <button v-if="authStore.currentRole=='laborants'" @click="() => { showSoftwareModal = true; fetchSoftware(); }" class="add-button">
       Programmatūra
     </button>
     <div class="computer-cards">
@@ -274,8 +274,8 @@ onMounted(fetchComputers);
             {{ os.software.length > 0 ? os.software.join(', ') : "Nav instalēta" }}
           </p>
         </div>
-        <button v-if="authStore.currentRole=='administrators'" @click="editComputer(computer)" class="edit-btn">Rediģēt</button>
-        <button v-if="authStore.currentRole=='administrators'" @click="confirmDelete(computer.computer_id)" class="delete-btn">Dzēst</button>
+        <button v-if="authStore.currentRole=='laborants'" @click="editComputer(computer)" class="edit-btn">Rediģēt</button>
+        <button v-if="authStore.currentRole=='laborants'" @click="confirmDelete(computer.computer_id)" class="delete-btn">Dzēst</button>
       </div>
     </div>
 

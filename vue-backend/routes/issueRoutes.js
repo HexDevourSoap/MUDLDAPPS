@@ -52,7 +52,7 @@ router.post("/issues", authenticateUser, authorizeRole(["lietotājs"]), async (r
     }
 });
 
-router.put("/issues/:id/status", authenticateUser, authorizeRole(["administrators", "pārvaldnieks"]), async (req, res) => {
+router.put("/issues/:id/status", authenticateUser, authorizeRole([/*"administrators", "pārvaldnieks"*/"laborants"]), async (req, res) => {
     try {
         const { status } = req.body;
         const { id } = req.params;
@@ -70,7 +70,7 @@ router.put("/issues/:id/status", authenticateUser, authorizeRole(["administrator
     }
 });
 
-router.put("/issues/:id/computer/:computerId", authenticateUser, authorizeRole(["administrators", "pārvaldnieks"]), async (req, res) => {
+router.put("/issues/:id/computer/:computerId", authenticateUser, authorizeRole([/*"administrators", "pārvaldnieks"*/"laborants"]), async (req, res) => {
     const { status } = req.body;
 
     try {
