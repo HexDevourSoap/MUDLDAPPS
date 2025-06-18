@@ -269,10 +269,18 @@ onMounted(() => {
     fetchRequests();
     fetchAllReservations();
 });
+
+// function conputerCount(computers){
+//     let count = 0;
+//     for(computer in uniqueComputers){
+//         count++;
+//     }
+//     return count;
+// }
 </script>
 
 <template>
-    <div class="request-container">
+    <div v-if="authStore.currentRole=='pārvaldnieks' || authStore.currentRole=='laborants'" class="request-container">
         <h1>Rezervāciju veidošana</h1>
         <button v-if="authStore.currentRole=='pārvaldnieks'" @click="openReportModal">Ģenerēt noslogotības pārskatu</button>
 
@@ -289,6 +297,7 @@ onMounted(() => {
                 <tr>
                     <th>Lietotāja e-pasts</th>
                     <th>Informācija</th>
+                    <th>Datoru skaits</th>
                     <th>Izveidots</th>
                     <th>Statuss</th>
                     <th v-if="authStore.currentRole=='laborants'">Darbība</th>
@@ -298,6 +307,7 @@ onMounted(() => {
                 <tr v-for="request in filteredRequests" :key="request.request_id">
                     <td>{{ request.email }}</td>
                     <td>{{ request.information }}</td>
+                    <!-- <td>{{ conputerCount(request.uniqueComputers) }}</td> -->
                     <td>{{ new Date(request.created_at).toLocaleString() }}</td>
                     <td>
                         {{ request.status }}

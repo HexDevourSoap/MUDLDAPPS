@@ -85,7 +85,7 @@ onMounted(fetchComputers);
 </script>
 
 <template>
-    <div class="request-container">
+    <div v-if="authStore.currentRole=='lietotājs'" class="request-container">
         <h1>Pieteikšanās resursu lietošanai</h1>
         
         <label>Izvēlieties datorus:</label>

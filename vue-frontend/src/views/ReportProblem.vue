@@ -63,7 +63,7 @@ onMounted(fetchComputers);
 </script>
 
 <template>
-    <div class="request-container">
+    <div v-if="authStore.currentRole!='administrators'" class="request-container">
         <h1>Pieteikt problēmu</h1>
 
         <label>Izvēlieties datorus:</label>

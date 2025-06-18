@@ -112,7 +112,7 @@ onMounted(fetchIssues);
 </script>
 
 <template>
-    <div class="issue-container">
+    <div v-if="authStore.currentRole=='laborants' || authStore.currentRole=='administrators'" class="issue-container">
         <h1>Problēmu pārskats</h1>
 
         <div class="filter-container">
