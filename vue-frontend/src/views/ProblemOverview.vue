@@ -129,6 +129,7 @@ onMounted(fetchIssues);
 </script>
 
 <template>
+    <h1 v-if="authStore.currentRole!='laborants' && authStore.currentRole!='administrators'">Jūsu lomai nav piekļuves šai lapai.</h1>
     <div v-if="authStore.currentRole=='laborants' || authStore.currentRole=='administrators'" class="issue-container">
         <h1>Problēmu pārskats</h1>
 
@@ -143,6 +144,7 @@ onMounted(fetchIssues);
         </div>
 
         <p id="count">Neapstiprinātu problēmu skaits:</p>
+        <h4 v-if="authStore.currentRole=='administrators'">Komentēt un mainīt problemas statusu var tikai laborants.</h4>
 
         <table>
             <thead>

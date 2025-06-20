@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import bcrypt from 'bcryptjs';
 import api from "../services/api";
+import { useAuthStore } from "../store/auth";
 
 const users = ref([]);
 const roles = ref([]);
@@ -12,6 +13,7 @@ const showCreateModal = ref(false);
 const selectedUser = ref(null);
 const selectedUserRoles = ref([]);
 const newUser = ref({ email: '', user_type: 'Local', username: '', password: '', phone_number: '', is_active: true, roles: [] });
+const authStore = useAuthStore();
 
 const openEditModal = (user) => {
   selectedUser.value = { ...user };
@@ -182,11 +184,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-4">
+  <h1 v-if="authStore.currentRole!='administrators'">Jūsu lomai nav piekļuves šai lapai.</h1>
+  <div v-if="authStore.currentRole=='administrators'" class="p-4">
     <h1 class="text-xl font-bold mb-4">Lietotāju pārvaldība</h1>
     
     <div class="mb-4">
-        <input 
+        <input  
           type="text" 
           v-model="searchQuery" 
           placeholder="Meklēt" 
@@ -211,7 +214,7 @@ onMounted(() => {
                 <th class="border p-2">Lietotāja tips</th>
                 <th class="border p-2">Lomas</th>
                 <th class="border p-2">Aktīvs</th>
-                <th class="border p-2">Darbība</th>
+                <th  class="border p-2">Darbība</th>
             </tr>
         </thead>
         <tbody>

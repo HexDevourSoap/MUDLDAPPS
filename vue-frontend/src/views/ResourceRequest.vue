@@ -85,6 +85,7 @@ onMounted(fetchComputers);
 </script>
 
 <template>
+    <h1 v-if="authStore.currentRole!='lietotājs'">Jūsu lomai nav piekļuves šai lapai.</h1>
     <div v-if="authStore.currentRole=='lietotājs'" class="request-container">
         <h1>Pieteikšanās resursu lietošanai</h1>
         

@@ -280,8 +280,10 @@ onMounted(() => {
 </script>
 
 <template>
+    <h1 v-if="authStore.currentRole!='pārvaldnieks' && authStore.currentRole!='laborants'">Jūsu lomai nav piekļuves šai lapai.</h1>
     <div v-if="authStore.currentRole=='pārvaldnieks' || authStore.currentRole=='laborants'" class="request-container">
         <h1>Rezervāciju veidošana</h1>
+        <h4 v-if="authStore.currentRole=='laborants'">Ģenerēt noslogotības pārskatu var tikai pārvaldnieki.</h4>
         <button v-if="authStore.currentRole=='pārvaldnieks'" @click="openReportModal">Ģenerēt noslogotības pārskatu</button>
 
         <div class="filter-container">
@@ -292,12 +294,13 @@ onMounted(() => {
                 </option>
             </select>
         </div>
+        <h4 v-if="authStore.currentRole=='pārvaldnieks'">Mainīt pieprasījumu statusu var tikai laboranti.</h4>
         <table>
             <thead>
                 <tr>
                     <th>Lietotāja e-pasts</th>
                     <th>Informācija</th>
-                    <th>Datoru skaits</th>
+                    <!-- <th>Datoru skaits</th> -->
                     <th>Izveidots</th>
                     <th>Statuss</th>
                     <th v-if="authStore.currentRole=='laborants'">Darbība</th>

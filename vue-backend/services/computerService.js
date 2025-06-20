@@ -236,6 +236,57 @@ const deleteSoftware = async (softwareId) => {
   }
 };
 
+
+
+async function getGPU() {
+  const [rows] = await pool.query(
+    `SELECT component_id, name as component_name, description,
+    FROM components ORDER BY component_name ASC
+    WHERE category='GPU';`
+  )
+  return rows;
+}
+async function getCPU(){
+  const [rows] = await pool.query(
+    `SELECT component_id, name as component_name, description,
+    FROM components ORDER BY component_name ASC
+    WHERE category='CPU';`
+  )
+  return rows;
+}
+async function getRAM(){
+  const [rows] = await pool.query(`
+    SELECT component_id, name as component_name, description,
+    FROM components ORDER BY component_name ASC
+    WHERE category='RAM';
+  `)
+  return rows;
+}
+async function getDrive(){
+  const [rows] = await pool.query(`
+    SELECT component_id, name as component_name, category, description,
+    FROM components ORDER BY component_name ASC
+    WHERE category='SSD' OR category='HDD';
+  `)
+}
+
+async function getWindows(){
+  const [rows] = await pool.query(`
+    SELECT os_id, name as os_name, version
+    FROM os ORDER BY os_name ASC
+    WHERE LIKE os_name='Windows';
+  `)
+  return rows;
+}
+async function getLinux(){
+  const [rows] = await pool.query(`
+    SELECT os_id, name as os_name, version
+    FROM os ORDER BY os_name ASC
+    WHERE os_name='Debian' OR os_name='Ubuntu';
+  `)
+  return rows;
+}
+
 module.exports = {
   getComputers,
   addComputer,
@@ -255,5 +306,14 @@ module.exports = {
   getSoftware,
   addSoftware,
   updateSoftware,
-  deleteSoftware
+  deleteSoftware,
+
+
+  getGPU,
+  getCPU,
+  getRAM,
+  getDrive,
+
+  getWindows,
+  getLinux
 };

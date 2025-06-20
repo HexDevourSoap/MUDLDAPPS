@@ -253,6 +253,8 @@ onMounted(fetchComputers);
 
   <div class="computers-container">
     <h1>Datoru pārskats</h1>
+    <h4 v-if="authStore.currentRole!='laborants'">Mainīt datorus un viss, kas tiem pieder, var tikai laboranti.</h4>
+    <br v-if="authStore.currentRole!='laborants'">
 
     <button v-if="authStore.currentRole=='laborants'" @click="showModal = true" class="add-button">Pievienot datoru</button>
     <button v-if="authStore.currentRole=='laborants'" @click="() => { showComponentModal = true; fetchComponents(); }" class="add-button">
