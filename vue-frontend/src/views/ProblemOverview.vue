@@ -108,6 +108,23 @@ const updateIssue = async () => {
     }
 };
 
+function pendingCount(){
+    let count = 0;
+    try{
+        const filtered = issues;
+        for(var i = 0; i < filtered.length; i++){
+            const issue = filtered[i];
+            if(issue.status == "pending"){
+                count++;
+            }
+        }
+    }catch(error){
+        console.error("Failed to count pending",error);
+    }
+    let ansver = "Neapstiprinātu problēmu skaits: " + count;
+    document.getElementById("count").textContent = ansver;
+}
+
 onMounted(fetchIssues);
 </script>
 
@@ -117,13 +134,15 @@ onMounted(fetchIssues);
 
         <div class="filter-container">
             <label for="statusFilter">Filtrēt pēc statusa:</label>
-            <select id="statusFilter" v-model="selectedStatus" @change="filterIssues">
+            <select @click="pendingCount()" id="statusFilter" v-model="selectedStatus" @change="filterIssues">
                 <option value="all">Visi</option>
                 <option v-for="status in statuses" :key="status" :value="status">
                     {{ status }}
                 </option>
             </select>
         </div>
+
+        <p id="count">Neapstiprinātu problēmu skaits:</p>
 
         <table>
             <thead>
