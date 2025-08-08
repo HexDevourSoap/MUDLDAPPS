@@ -129,8 +129,8 @@ onMounted(fetchIssues);
 </script>
 
 <template>
-    <h1 v-if="authStore.currentRole!='laborants' && authStore.currentRole!='administrators'">Jūsu lomai nav piekļuves šai lapai.</h1>
-    <div v-if="authStore.currentRole=='laborants' || authStore.currentRole=='administrators'" class="issue-container">
+    <h1 v-if="authStore.currentRole!='laborants' && authStore.currentRole!='administrators' && authStore.currentRole!='pārvaldnieks'">Jūsu lomai nav piekļuves šai lapai.</h1>
+    <div v-if="authStore.currentRole=='laborants' || authStore.currentRole=='administrators' || authStore.currentRole=='pārvaldnieks'" class="issue-container">
         <h1>Problēmu pārskats</h1>
 
         <div class="filter-container">

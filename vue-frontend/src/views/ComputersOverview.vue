@@ -529,6 +529,6 @@ td {
 }
 
 th {
-  background-color: #f4f4f4;
+  background-color: #ece5e5ff;
 }
 </style>

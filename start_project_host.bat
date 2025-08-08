@@ -5,4 +5,4 @@ start cmd /k "node index.js"
 cd /d "%~dp0vue-frontend"
 start cmd /k "npm run dev -- --host"
 
-start chrome http://192.168.5.101:5173/
+start chrome https://localhost:5173/
