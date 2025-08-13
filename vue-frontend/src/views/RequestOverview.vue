@@ -277,6 +277,43 @@ onMounted(() => {
 //     }
 //     return count;
 // }
+// Atgriež rezervācijas konkrētam pieprasījumam
+function getReservationsForRequest(requestId) {
+    return allReservations.value.filter(r => r.request_id === requestId);
+}
+
+// Atgriež unikālos laika intervālus konkrētam pieprasījumam
+function getTimeIntervals(requestId) {
+    const reservations = getReservationsForRequest(requestId);
+    const times = new Set();
+    reservations.forEach(res => {
+        times.add(
+            `${new Date(res.from_time).toLocaleString()} - ${new Date(res.to_time).toLocaleString()}`
+        );
+    });
+    return Array.from(times);
+}
+
+// Atgriež unikālo datoru skaitu konkrētam pieprasījumam
+function getComputerCount(requestId) {
+    const reservations = getReservationsForRequest(requestId);
+    const computers = new Set();
+    reservations.forEach(res => {
+        computers.add(res.computer_name);
+    });
+    return computers.size;
+}
+function hasOverlap(request) {
+    return requests.value.some(r =>
+        r.request_id !== request.request_id &&
+        r.status !== "denied" &&
+        r.computer_id === request.computer_id &&
+        (
+            new Date(request.from_time) < new Date(r.to_time) &&
+            new Date(request.to_time) > new Date(r.from_time)
+        )
+    );
+}
 </script>
 
 <template>
@@ -300,9 +337,11 @@ onMounted(() => {
                 <tr>
                     <th>Lietotāja e-pasts</th>
                     <th>Informācija</th>
+                    <th>Laika intervāli</th>
                     <!-- <th>Datoru skaits</th> -->
                     <th>Izveidots</th>
                     <th>Statuss</th>
+                    <th>Brīdinājums</th>
                     <th v-if="authStore.currentRole=='laborants'">Darbība</th>
                 </tr>
             </thead>
@@ -310,10 +349,20 @@ onMounted(() => {
                 <tr v-for="request in filteredRequests" :key="request.request_id">
                     <td>{{ request.email }}</td>
                     <td>{{ request.information }}</td>
-                    <!-- <td>{{ conputerCount(request.uniqueComputers) }}</td> -->
+                    <td>
+                        <ul>
+                            <li v-for="interval in getTimeIntervals(request.request_id)" :key="interval">{{ interval }}</li>
+                        </ul>
+                    </td>
+                    <td>{{ getComputerCount(request.request_id) }}</td>
                     <td>{{ new Date(request.created_at).toLocaleString() }}</td>
                     <td>
                         {{ request.status }}
+                    </td>
+                    <td>
+                        <span v-if="hasOverlap(request)" class="danger-badge">
+                             Rezervāciju pārklājums!
+                        </span>
                     </td>
                     <td v-if="authStore.currentRole=='laborants'">
                         <button  @click="openModal(request)">Rediģēt</button>
@@ -383,6 +432,15 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.danger-badge {
+    background: #f8d7da;
+    color: #721c24;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 4px 8px;
+    border: 1px solid #f5c6cb;
+    display: inline-block;
+}
 .request-container {
     max-width: 800px;
     margin: 0 auto;
