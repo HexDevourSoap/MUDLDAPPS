@@ -42,6 +42,7 @@ const fetchAllReservations = async () => {
     try {
         const response = await api.get(`/reservations`);
         allReservations.value = response.data;
+        console.log("allReservations:", allReservations.value); // 👈 te redzēsi laukus
     } catch (error) {
         console.error("Failed to fetch all reservations:", error);
     }
@@ -279,17 +280,36 @@ onMounted(() => {
 // }
 // Atgriež rezervācijas konkrētam pieprasījumam
 function getReservationsForRequest(requestId) {
-    return allReservations.value.filter(r => r.request_id === requestId);
+    return allReservations.value.filter(r => String(r.request_id) === String(requestId));
 }
-
+function parseDate(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (!isNaN(d)) return d;
+  // fallback uz regex (ja kāds AM/PM string)
+  const match = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4}), (\d{1,2}):(\d{2}):(\d{2}) (AM|PM)/);
+  if (!match) return null;
+  let [, month, day, year, hour, minute, second, ampm] = match;
+  month = parseInt(month, 10) - 1;
+  day = parseInt(day, 10);
+  year = parseInt(year, 10);
+  hour = parseInt(hour, 10);
+  minute = parseInt(minute, 10);
+  second = parseInt(second, 10);
+  if (ampm === "PM" && hour < 12) hour += 12;
+  if (ampm === "AM" && hour === 12) hour = 0;
+  return new Date(year, month, day, hour, minute, second);
+}
 // Atgriež unikālos laika intervālus konkrētam pieprasījumam
 function getTimeIntervals(requestId) {
     const reservations = getReservationsForRequest(requestId);
     const times = new Set();
     reservations.forEach(res => {
-        times.add(
-            `${new Date(res.from_time).toLocaleString()} - ${new Date(res.to_time).toLocaleString()}`
-        );
+        const from = parseDate(res.start || res.from_time);
+        const to = parseDate(res.end || res.to_time);
+        if (from && to) {
+            times.add(`${from.toLocaleString()} - ${to.toLocaleString()}`);
+        }
     });
     return Array.from(times);
 }
@@ -299,20 +319,86 @@ function getComputerCount(requestId) {
     const reservations = getReservationsForRequest(requestId);
     const computers = new Set();
     reservations.forEach(res => {
-        computers.add(res.computer_name);
+        computers.add(res.computer_name || res.name);
     });
     return computers.size;
 }
 function hasOverlap(request) {
-    return requests.value.some(r =>
-        r.request_id !== request.request_id &&
-        r.status !== "denied" &&
-        r.computer_id === request.computer_id &&
-        (
-            new Date(request.from_time) < new Date(r.to_time) &&
-            new Date(request.to_time) > new Date(r.from_time)
-        )
+  const requestReservations = getReservationsForRequest(request.request_id);
+  const result = allReservations.value.some(r =>
+    String(r.request_id) !== String(request.request_id) &&
+    r.status !== "denied" &&
+    requestReservations.some(rr => {
+      const rrFrom = parseDate(rr.start || rr.from_time);
+      const rrTo = parseDate(rr.end || rr.to_time);
+      const rFrom = parseDate(r.start || r.from_time);
+      const rTo = parseDate(r.end || r.to_time);
+      const sameComputer = rr.computer_id === r.computer_id;
+      const overlap = rrFrom < rTo && rrTo > rFrom;
+      if (sameComputer && overlap) {
+        console.log("Rezervāciju pārklājums starp:", rr, r);
+      }
+      return sameComputer && overlap;
+    })
+  );
+  console.log("hasOverlap:", request.request_id, result);
+  return result;
+}
+function hasRequestOverlap(request) {
+  console.log("request", request.request_id, "reservations:", getReservationsForRequest(request.request_id));
+  requests.value.forEach(r => {
+    console.log("other request", r.request_id, "reservations:", getReservationsForRequest(r.request_id));
+  });
+
+  const requestReservations = getReservationsForRequest(request.request_id);
+  const result = requests.value.some(r =>
+    r.request_id !== request.request_id &&
+    r.status !== "denied" &&
+    getReservationsForRequest(r.request_id).some(rr =>
+      requestReservations.some(res => {
+        const sameComputer = rr.computer_id === res.computer_id;
+        const overlap = parseDate(res.start || res.from_time) < parseDate(rr.end || rr.to_time) &&
+                        parseDate(res.end || res.to_time) > parseDate(rr.start || rr.from_time);
+        if (sameComputer && overlap) {
+          console.log("Pieprasījumu pārklājums starp:", res, rr);
+        }
+        return sameComputer && overlap;
+      })
+    )
+  );
+  console.log("hasRequestOverlap:", request.request_id, result);
+  return result;
+}
+function getWarnings(request) {
+  const warnings = [];
+
+  // PIEPRASĪJUMU pārklājums → balstās uz rezervācijām
+  const requestReservations = getReservationsForRequest(request.request_id);
+  const hasRequestOverlap = requests.value.some(r => {
+    if (r.request_id === request.request_id || r.status === "denied") return false;
+    const otherReservations = getReservationsForRequest(r.request_id);
+    return requestReservations.some(rr =>
+      otherReservations.some(or =>
+        parseDate(rr.from_time) < parseDate(or.to_time) &&
+        parseDate(rr.to_time) > parseDate(or.from_time)
+      )
     );
+  });
+  if (hasRequestOverlap) warnings.push("request");
+
+  // REZERVĀCIJU pārklājums → ar datoru ID
+  const hasReservationOverlap = allReservations.value.some(res =>
+    String(res.request_id) !== String(request.request_id) &&
+    res.status !== "denied" &&
+    requestReservations.some(rr =>
+      rr.computer_id === res.computer_id &&
+      parseDate(rr.from_time) < parseDate(res.to_time) &&
+      parseDate(rr.to_time) > parseDate(res.from_time)
+    )
+  );
+  if (hasReservationOverlap) warnings.push("reservation");
+
+  return warnings;
 }
 </script>
 
@@ -360,9 +446,12 @@ function hasOverlap(request) {
                         {{ request.status }}
                     </td>
                     <td>
-                        <span v-if="hasOverlap(request)" class="danger-badge">
-                             Rezervāciju pārklājums!
-                        </span>
+                       <span v-if="hasRequestOverlap(request)" class="warning-badge">
+                         Pieprasījumu pārklājums!
+                    </span>
+                    <span v-if="hasOverlap(request)" class="danger-badge">
+                         Rezervāciju pārklājums!
+                    </span>
                     </td>
                     <td v-if="authStore.currentRole=='laborants'">
                         <button  @click="openModal(request)">Rediģēt</button>
@@ -432,14 +521,24 @@ function hasOverlap(request) {
 </template>
 
 <style scoped>
+.warning-badge {
+  background: #a59252ff;
+  color: #f0ec21ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 4px;
+  font-weight: bold;
+  border: 1px solid #ffeeba;
+}
+
 .danger-badge {
-    background: #f8d7da;
-    color: #721c24;
-    font-weight: bold;
-    border-radius: 4px;
-    padding: 4px 8px;
-    border: 1px solid #f5c6cb;
-    display: inline-block;
+  background: #f8d7da;
+  color: #cc0d20ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 4px;
+  font-weight: bold;
+  border: 1px solid #f5c6cb;
 }
 .request-container {
     max-width: 800px;
